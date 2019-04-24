@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Tab One
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-row>
+    <ion-col text-center>
+      <iframe src="http://g3.ipcamlive.com/player/player.php?alias=5cb9f85feb7f7" width="90%" height="210px"
+      frameborder="0" autoplay=1 allowfullscreen></iframe>
+    </ion-col>
+  </ion-row>
+
+
+  <ion-card>
+      <ion-card-content>
+    <ion-button shape="round" color="primary" size="large" class="portaoBtn" (click)="aciona()" [disabled]="btnDisabled">Go !</ion-button>
+  
+  
+        <p>Portão está: <b>{{status}}</b></p>
+      </ion-card-content>
+    </ion-card>
+</ion-content>
