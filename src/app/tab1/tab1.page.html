@@ -1,3 +1,5 @@
+
+
 <ion-header>
   <ion-toolbar>
     <ion-title>
@@ -7,9 +9,19 @@
 </ion-header>
 
 <ion-content>
+
+    
+        <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+          <ion-refresher-content refreshingSpinner="circles">  
+              
+          </ion-refresher-content>
+        </ion-refresher>
+     
+      
+
   <ion-row>
     <ion-col text-center>
-      <iframe src="http://g3.ipcamlive.com/player/player.php?alias=5cb9f85feb7f7" width="90%" height="210px"
+      <iframe id="iCam" src="http://g3.ipcamlive.com/player/player.php?alias=5cb9f85feb7f7" width="90%" height="210px"
       frameborder="0" autoplay=1 allowfullscreen></iframe>
     </ion-col>
   </ion-row>

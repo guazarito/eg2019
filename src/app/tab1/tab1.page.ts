@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Paho } from 'ng2-mqtt/mqttws31';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -8,14 +9,21 @@ import { Paho } from 'ng2-mqtt/mqttws31';
 })
 export class Tab1Page {
 
-  status = "fechado";
+  status = "Fechado";
   client: Paho.MQTT.Client;
   message = new Paho.MQTT.Message("acionar");
   recebi = 0;
 
   btnDisabled = false;
 
-  constructor() {
+  loader;
+
+  constructor(public loadingController: LoadingController) {
+
+    this.presentLoading();
+
+    var iframe = document.getElementById('youriframe');
+  
     this.client = new Paho.MQTT.Client("m15.cloudmqtt.com", 30331, "EGv22123235233");
     this.client.onConnectionLost = this.onConnectionLost;
     this.client.onMessageArrived = this.onMessageArrived.bind(this);
@@ -24,11 +32,27 @@ export class Tab1Page {
 
   }
 
+  async presentLoading() {
+    this.loader = await this.loadingController.create({
+      message: 'Loading',
+      duration: 1000
+    });
+    await this.loader.present();
+  }
 
   async aciona() {
     this.btnDisabled = true;
     this.message.destinationName = "EG_acao_portao";
     this.client.send(this.message);
+  }
+
+  doRefresh(event) {
+    console.log('Begin async operation');
+
+    window.location.reload();
+
+    event.target.complete();
+    
   }
 
   onConnect() {
