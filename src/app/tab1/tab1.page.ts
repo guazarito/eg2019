@@ -1,6 +1,12 @@
 import { Component } from '@angular/core';
 import { Paho } from 'ng2-mqtt/mqttws31';
 import { LoadingController } from '@ionic/angular';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { BackgroundMode } from '@ionic-native/background-mode/ngx';
+import { NativeRingtones } from '@ionic-native/native-ringtones/ngx';
+import { LocalNotifications } from '@ionic-native/local-notifications/ngx';
+
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -9,7 +15,9 @@ import { LoadingController } from '@ionic/angular';
 })
 export class Tab1Page {
 
-  status = "Fechado";
+  status = "";
+  hrDaAbertura;
+  Hora;
   client: Paho.MQTT.Client;
   message = new Paho.MQTT.Message("acionar");
   recebi = 0;
@@ -18,17 +26,44 @@ export class Tab1Page {
 
   loader;
 
-  constructor(public loadingController: LoadingController) {
+  constructor(public loadingController: LoadingController,
+    private statusBar: StatusBar,
+    private ringtones: NativeRingtones,
+    public plt: Platform,
+    private backgroundMode: BackgroundMode,
+    private localNotifications: LocalNotifications) {
+
+    this.plt.ready().then((ready) => {
+      console.log('readfy');
+      this.backgroundMode.enable();
+      this.statusBar.overlaysWebView(false);
+
+      // set status bar to white
+      this.statusBar.backgroundColorByHexString('#000');
+
+      this.ringtones.getRingtone().then((ringtones) => { console.log(ringtones); });
+
+      this.client = new Paho.MQTT.Client("m15.cloudmqtt.com", 30331, "EGv22123235233");
+      this.client.onConnectionLost = this.onConnectionLost;
+      this.client.onMessageArrived = this.onMessageArrived.bind(this);
+
+      this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
+
+    });
 
     this.presentLoading();
 
-    var iframe = document.getElementById('youriframe');
-  
-    this.client = new Paho.MQTT.Client("m15.cloudmqtt.com", 30331, "EGv22123235233");
-    this.client.onConnectionLost = this.onConnectionLost;
-    this.client.onMessageArrived = this.onMessageArrived.bind(this);
+    setInterval(() => {
+      if (this.status == "Aberto") {
+        this.localNotifications.schedule({
+          id: 1,
+          text: 'Ainda  ' + this.status + ' ' + this.hrDaAbertura,
+          sound: 'file://assets/sounds/plucky.mp3',
+          led: 'FF0000',
+        });
+      }
+    }, 60000);
 
-    this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
 
   }
 
@@ -52,7 +87,7 @@ export class Tab1Page {
     window.location.reload();
 
     event.target.complete();
-    
+
   }
 
   onConnect() {
@@ -93,6 +128,19 @@ export class Tab1Page {
       if (message.payloadString == 1) {
         console.log("Aberto");
         this.status = "Aberto";
+
+
+        this.localNotifications.schedule({
+          id: 2,
+          text: "Abriu !"
+        });
+
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        this.Hora = h + ":" + m + ":" + s;
+        this.hrDaAbertura =  today.toJSON().slice(0,10).replace(/-/g,'/') + ' ' + this.Hora;
       } else if (message.payloadString == 0) {
         {
           console.log("Fechado");
