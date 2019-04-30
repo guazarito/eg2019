@@ -18,6 +18,7 @@ export class Tab1Page {
   status = "";
   hrDaAbertura;
   Hora;
+  isCon = "";
   client: Paho.MQTT.Client;
   message = new Paho.MQTT.Message("acionar");
   recebi = 0;
@@ -44,7 +45,7 @@ export class Tab1Page {
       this.ringtones.getRingtone().then((ringtones) => { console.log(ringtones); });
 
       this.client = new Paho.MQTT.Client("m15.cloudmqtt.com", 30331, "EGv22123235233");
-      this.client.onConnectionLost = this.onConnectionLost;
+      this.client.onConnectionLost = this.onConnectionLost.bind(this);
       this.client.onMessageArrived = this.onMessageArrived.bind(this);
 
       this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
@@ -93,6 +94,7 @@ export class Tab1Page {
   onConnect() {
     // Once a connection has been made, make a subscription and send a message.
     console.log("Connected :)))");
+    this.isCon = "Connected :)))";
     this.client.subscribe("recebi", { qos: 0 });
     this.client.subscribe("status_portao", { qos: 0 });
     //var message = new Paho.MQTT.Message("Hello CloudMQTT");
@@ -106,8 +108,10 @@ export class Tab1Page {
 
   // called when the client loses its connection
   onConnectionLost(responseObject) {
+    this.isCon = "Disconnected :(( ";
     if (responseObject.errorCode !== 0) {
       console.log("onConnectionLost:" + responseObject.errorMessage);
+      this.isCon = "Disconnected :(( " + responseObject.errorMessage;
     }
   }
 
