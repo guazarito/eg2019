@@ -23,9 +23,13 @@ export class Tab1Page {
   message = new Paho.MQTT.Message("acionar");
   recebi = 0;
 
+  i = 0;
+
   btnDisabled = false;
 
   loader;
+  private sub1$: any;
+  private sub2$: any;
 
   constructor(public loadingController: LoadingController,
     private statusBar: StatusBar,
@@ -36,7 +40,7 @@ export class Tab1Page {
 
     this.plt.ready().then((ready) => {
       console.log('readfy');
-      this.backgroundMode.enable();
+
       this.statusBar.overlaysWebView(false);
 
       // set status bar to white
@@ -50,7 +54,23 @@ export class Tab1Page {
 
       this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
 
+
+      this.sub1$ = this.plt.pause.subscribe(() => {
+        console.log('****UserdashboardPage PAUSED****');
+
+        this.backgroundMode.enable();
+      });
+      this.sub2$ = this.plt.resume.subscribe(() => {
+        if (!this.isCon) {
+          this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
+        }
+        console.log('****UserdashboardPage RESUMED****');
+        this.backgroundMode.disable();
+
+      });
     });
+
+
 
     this.presentLoading();
 
@@ -74,6 +94,11 @@ export class Tab1Page {
       duration: 1000
     });
     await this.loader.present();
+  }
+
+  ionViewWillUnload() {
+    this.sub1$.unsubscribe();
+    this.sub2$.unsubscribe();
   }
 
   async aciona() {
@@ -112,6 +137,8 @@ export class Tab1Page {
     if (responseObject.errorCode !== 0) {
       console.log("onConnectionLost:" + responseObject.errorMessage);
       this.isCon = "Disconnected :(( " + responseObject.errorMessage;
+      this.client.connect({ useSSL: true, userName: "hedhmutk", password: "dsUHVnol39qg", onSuccess: this.onConnect.bind(this) });
+      this.i++;
     }
   }
 
@@ -144,7 +171,7 @@ export class Tab1Page {
         var m = today.getMinutes();
         var s = today.getSeconds();
         this.Hora = h + ":" + m + ":" + s;
-        this.hrDaAbertura =  today.toJSON().slice(0,10).replace(/-/g,'/') + ' ' + this.Hora;
+        this.hrDaAbertura = today.toJSON().slice(0, 10).replace(/-/g, '/') + ' ' + this.Hora;
       } else if (message.payloadString == 0) {
         {
           console.log("Fechado");
